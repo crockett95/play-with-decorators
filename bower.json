@@ -4,7 +4,8 @@
   "dependencies": {
     "bootstrap-sass": "~3.3.5",
     "modernizr": "~2.8.1",
-    "requirejs": "^2.1.22"
+    "requirejs": "^2.1.22",
+    "regenerator": "facebook/regenerator#^0.8.42"
   },
   "overrides": {
     "bootstrap-sass": {

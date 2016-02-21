@@ -2,14 +2,14 @@ import { Logger, LogLevels, LoggingDecorators } from './logger';
 import { deprecatedProp as deprecated } from './main';
 
 class TestClass {
-  public logger: Logger = new Logger(LogLevels.INFO);
+  public logger: Logger = new Logger(/*LogLevels.INFO*/);
 
   @LoggingDecorators.trace
   traceMethod() {
     return false;
   }
 
-  @deprecated('Don\'t use this')
+  @deprecated()
   @LoggingDecorators.time
   timeMethod() {
     let time = Date.now();
@@ -29,14 +29,27 @@ class TestClass {
       this.timeMethod();
     }
   }
+
+  asyncMethod = async function (foo: any) {
+    return new Promise((resolve) => {
+      this.timeMethod();
+      resolve(foo);
+    });
+  }
 }
 
 let test = new TestClass();
 test.timeMethod();
 test.infoMethod();
 test.traceMethod();
-test.logger.level = LogLevels.DEBUG;
+// test.logger.level = LogLevels.DEBUG;
 test.infoMethod();
 test.timeMethod();
 test.traceMethod();
 test.profileMethod();
+(async function () {
+  console.log(await test.asyncMethod('foo'));
+  console.log('bar');
+})();
+console.log('baz');
+

@@ -25,7 +25,9 @@ gulp.task('styles', () => {
 });
 
 gulp.task('scripts', () => {
-  return gulp.src('app/scripts/**/*.ts')
+  let oldEnv = process.env.BABEL_ENV;
+  process.env.BABEL_ENV = 'gulp-task'
+  let task = gulp.src('app/scripts/**/*.ts')
     .pipe($.plumber())
     .pipe($.sourcemaps.init())
     .pipe($.typescript(tsProject))
@@ -33,6 +35,10 @@ gulp.task('scripts', () => {
     .pipe($.sourcemaps.write('.'))
     .pipe(gulp.dest('.tmp/scripts'))
     .pipe(reload({stream: true}));
+
+  task.on('end', function() {
+    process.env.BABEL_ENV = oldEnv;
+  });
 });
 
 function lint(files, options) {
