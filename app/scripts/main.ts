@@ -1,7 +1,3 @@
-export function hidden(target: Object, name: string, properties?: PropertyDescriptor) {
-  properties.enumerable = false;
-}
-
 export function deprecatedProp(message?: string, infoUrl?: string): PropertyDecorator {
   message = message || '%s is deprecated. Please update your usages accordingly';
 
@@ -10,7 +6,7 @@ export function deprecatedProp(message?: string, infoUrl?: string): PropertyDeco
       var origFn = properties.value;
       properties.value = function () {
         console.warn.apply(console, [message, `${(<any>target.constructor).name}#${name.toString()}`, infoUrl ? infoUrl : '']);
-        origFn.apply(this, arguments);
+        return origFn.apply(this, arguments);
       }
     }
   }

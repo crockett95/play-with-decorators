@@ -32,6 +32,7 @@ gulp.task('scripts', () => {
     .pipe($.sourcemaps.init())
     .pipe($.typescript(tsProject))
     .pipe($.babel())
+    .pipe($.uglify())
     .pipe($.sourcemaps.write('.'))
     .pipe(gulp.dest('.tmp/scripts'))
     .pipe(reload({stream: true}));

@@ -30,19 +30,27 @@ class TestClass {
     }
   }
 
-  asyncMethod = async function (foo: any) {
-    return new Promise((resolve) => {
+  @LoggingDecorators.timePromise
+  asyncMethod<T>(foo?: T): Promise<T> {
+    let p = new Promise<T>((resolve, reject) => {
+      if (!foo) return reject(new Error('No foo'));
       this.timeMethod();
       resolve(foo);
     });
+
+    return p;
   }
 }
+let a = [1, 3, 5];
+let b = [0, ...a, 2, 4];
 
 let test = new TestClass();
+console.log('foo');
 test.timeMethod();
+console.log('bar');
 test.infoMethod();
 test.traceMethod();
-// test.logger.level = LogLevels.DEBUG;
+test.logger.level = LogLevels.DEBUG;
 test.infoMethod();
 test.timeMethod();
 test.traceMethod();
@@ -50,6 +58,12 @@ test.profileMethod();
 (async function () {
   console.log(await test.asyncMethod('foo'));
   console.log('bar');
+  try {
+    await test.asyncMethod();
+  } catch (err) {
+    console.log(err);
+  }
 })();
 console.log('baz');
+test.logger.info(test, ...b);
 
