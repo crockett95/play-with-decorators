@@ -9,14 +9,17 @@ class TestClass {
     return false;
   }
 
-  @deprecated()
+  @deprecated({ removalVersion: '1.0.0' })
   @LoggingDecorators.time
-  timeMethod() {
+  timeMethod(): number {
+    var x: number;
     let time = Date.now();
 
     while (Date.now() - time < 1000) {
-      let x = 4;
+      x = 4;
     }
+
+    return x;
   }
 
   infoMethod() {
@@ -33,7 +36,9 @@ class TestClass {
   @LoggingDecorators.timePromise
   asyncMethod<T>(foo?: T): Promise<T> {
     let p = new Promise<T>((resolve, reject) => {
-      if (!foo) return reject(new Error('No foo'));
+      if (!foo) {
+        return reject(new Error('No foo'));
+      }
       this.timeMethod();
       resolve(foo);
     });
@@ -41,16 +46,12 @@ class TestClass {
     return p;
   }
 }
-let a = [1, 3, 5];
-let b = [0, ...a, 2, 4];
 
 let test = new TestClass();
-console.log('foo');
 test.timeMethod();
-console.log('bar');
 test.infoMethod();
 test.traceMethod();
-test.logger.level = LogLevels.DEBUG;
+// test.logger.level = LogLevels.DEBUG;
 test.infoMethod();
 test.timeMethod();
 test.traceMethod();
@@ -65,5 +66,4 @@ test.profileMethod();
   }
 })();
 console.log('baz');
-test.logger.info(test, ...b);
 

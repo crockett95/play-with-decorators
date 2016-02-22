@@ -1,24 +1,16 @@
-import { deprecatedProp as deprecated } from './main';
-
 export class Logger implements Console {
   private static _g: Logger;
 
+  msIsIndependentlyComposed: () => boolean;
+
   constructor(public level: LogLevels = LogLevels.WARN) {}
 
-  /**
-   * Foo bar baz
-   *
-   * @param {string} method [description]
-   * @param {any[]}  args   [description]
-   */
-  nativeCall(level: LogMethodLevels, method: string, args: any[]|IArguments): void {
-    if ((this.level & level) && console && (<any>console)[method]) {
-      (<any>console)[method].apply(console, args);
-    }
+  clear(): void {
+    this.nativeCall(LogMethodLevels.DEBUG, 'clear', arguments);
   }
 
   error(...args: any[]): void {
-    this.nativeCall(LogMethodLevels.ERROR, 'error', args);
+    this.nativeCall(LogMethodLevels.ERROR, 'error', arguments);
   }
 
   trace(...args: any[]): void {
@@ -31,7 +23,6 @@ export class Logger implements Console {
 
   count(name?: string): void {
     this.nativeCall(LogMethodLevels.LOG, 'count', arguments);
-    console.time
   }
 
   debug(message?: string, ...args: any[]): void {
@@ -90,8 +81,23 @@ export class Logger implements Console {
     this.nativeCall(LogMethodLevels.WARN, 'warn', arguments);
   }
 
-  clear: () => void;
-  msIsIndependentlyComposed: () => boolean;
+  /**
+   * Makes a call to the native console method
+   *
+   * If the instance log level is set low enough, and the console method exists,
+   * calls the method on the browser console
+   *
+   * @param {LogMethodLevels}  level  The required logging level
+   * @param {string}           method The method name
+   * @param {any[]|IArguments} args   Pass through for the args
+   */
+  private nativeCall(level: LogMethodLevels, method: string, args: any[] | IArguments): void {
+    /* tslint:disable:no-bitwise */
+    if ((this.level & level) && console && (<any>console)[method]) {
+      /* tslint:enable:no-bitwise */
+      (<any>console)[method](...args);
+    }
+  }
 
   static get logger(): Logger {
     Logger._g = Logger._g || new Logger();
@@ -125,16 +131,16 @@ export module LoggingDecorators {
 
   export var trace: PropertyDecorator = (
     target: Object,
-    name: string|symbol,
+    name: string | symbol,
     properties?: PropertyDescriptor
   ) => {
     var origFn = properties.value;
-    properties.value = function () {
+    properties.value = function() {
       (<Loggable>this).logger.trace(`${(<any>target.constructor).name}#${name.toString()}`);
       let retVal = origFn.apply(this, arguments);
       return retVal;
-    }
-  }
+    };
+  };
 
   export var time: PropertyDecorator = (
     target: Object,
@@ -147,16 +153,16 @@ export module LoggingDecorators {
       let retVal = origFn.apply(this, arguments);
       (<Loggable>this).logger.timeEnd(`${(<any>target.constructor).name}#${name.toString()}`);
       return retVal;
-    }
-  }
+    };
+  };
 
   export var timePromise: PropertyDecorator = (
     target: Object,
-    name: string|symbol,
+    name: string | symbol,
     properties?: PropertyDescriptor
   ) => {
     var origFn = properties.value;
-    properties.value = function () {
+    properties.value = function() {
       let ts = performance.now();
       (<Loggable>this).logger.time(`${(<any>target.constructor).name}#${name.toString()} (${ts})`);
       return origFn.apply(this, arguments).then((val: any) => {
@@ -166,8 +172,8 @@ export module LoggingDecorators {
         (<Loggable>this).logger.timeEnd(`${(<any>target.constructor).name}#${name.toString()} (${ts})`);
         throw val;
       });
-    }
-  }
+    };
+  };
 
   export var profile: PropertyDecorator = (
     target: Object,
@@ -180,6 +186,6 @@ export module LoggingDecorators {
       let retVal = origFn.apply(this, arguments);
       (<Loggable>this).logger.profileEnd(`${(<any>target.constructor).name}#${name.toString()}`);
       return retVal;
-    }
-  }
+    };
+  };
 }

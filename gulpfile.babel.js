@@ -4,6 +4,7 @@ import gulpLoadPlugins from 'gulp-load-plugins';
 import browserSync from 'browser-sync';
 import del from 'del';
 import {stream as wiredep} from 'wiredep';
+import stylish from 'tslint-stylish';
 
 const $ = gulpLoadPlugins();
 const reload = browserSync.reload;
@@ -30,9 +31,10 @@ gulp.task('scripts', () => {
   let task = gulp.src('app/scripts/**/*.ts')
     .pipe($.plumber())
     .pipe($.sourcemaps.init())
+    .pipe($.tslint())
+    .pipe($.tslint.report(stylish, { emitError: false }))
     .pipe($.typescript(tsProject))
     .pipe($.babel())
-    .pipe($.uglify())
     .pipe($.sourcemaps.write('.'))
     .pipe(gulp.dest('.tmp/scripts'))
     .pipe(reload({stream: true}));
@@ -42,23 +44,17 @@ gulp.task('scripts', () => {
   });
 });
 
-function lint(files, options) {
+function lint(files) {
   return () => {
-    // return gulp.src(files)
-    //   .pipe(reload({stream: true, once: true}))
-    //   .pipe($.eslint(options))
-    //   .pipe($.eslint.format())
-    //   .pipe($.if(!browserSync.active, $.eslint.failAfterError()));
+    return gulp.src(files)
+      .pipe(reload({stream: true, once: true}))
+      .pipe($.tslint())
+      .pipe($.tslint.report('prose', { emitError: !browserSync.active }));
   };
 }
-const testLintOptions = {
-  env: {
-    mocha: true
-  }
-};
 
-gulp.task('lint', lint('app/scripts/**/*.js'));
-gulp.task('lint:test', lint('test/spec/**/*.js', testLintOptions));
+gulp.task('lint', lint('app/scripts/**/*.ts'));
+gulp.task('lint:test', lint('test/spec/**/*.ts'));
 
 gulp.task('html', ['styles', 'scripts'], () => {
   return gulp.src('app/*.html')
